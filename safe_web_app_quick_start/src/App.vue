@@ -1,5 +1,5 @@
 <script>
-  const safenetwork = require('./safenetwork_code_plus.js');
+  const safenetwork = require('./safenetwork_code.js');
   export default {
     name: 'App',
     data() {
