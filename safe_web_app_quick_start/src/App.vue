@@ -1,5 +1,5 @@
 <script>
-  const safenetwork = require('./safenetwork_code.js');
+  const safenetwork = require('./safenetwork_code_plus.js');
   export default {
     name: 'App',
     data() {
@@ -21,17 +21,16 @@
 
       selectTrip: async function(radioTrip) {
         this.radioKey = await radioTrip.key;
-        this.radioVersion = await radioTrip.version;
         this.tripText = await radioTrip.value.text;
       },
 
       editTrip: async function() {
         try {
-        await safenetwork.updateItem(this.radioKey, {text: this.tripText, made: false}, this.radioVersion);
-        let savedBanner = document.getElementById("savedMessage");
-        savedBanner.className = "show";
-        setTimeout(function(){ savedBanner.className = savedBanner.className.replace("show", ""); },1200);
-        //this.tripText = '';
+        this.selectedVersion = await safenetwork.getSelectedEntry(this.radioKey);
+        await safenetwork.updateItem(this.radioKey, {text: this.tripText, made: false}, this.selectedVersion);
+        let savedMessage = document.getElementById("savedMessage");
+        savedMessage.className = "show";
+        setTimeout(function(){ savedMessage.className = savedMessage.className.replace("show", ""); },1200);
         }
         catch (err)
         {alert ("No Trip Selected!\n\nAdd New Trip or Select From List")}
@@ -108,7 +107,7 @@
               </label>
             </li>
           </ul>
-            <textarea type="text" id = "textBox" v-model="tripText" size="150" 
+            <textarea type="text" id="textBox" v-model="tripText" size="150" 
             placeholder=""></textarea>
             <input class="btn-primary" type="submit" id= "addBtn" value="Add Trip" v-on:click.prevent="addTrip">
             <input class="btn-primary" type="submit" id= "editBtn" value="Save Changes" >
