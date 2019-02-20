@@ -87,6 +87,11 @@ async function getItems() {
   return items;
 };
 
+async function getSelectedEntry(radioKey) {
+    let selectedEntry = await currentMD.get(radioKey); 
+    return selectedEntry.version
+};
+
 async function insertItem(key, value) {
   const mutations = await safeApp.mutableData.newMutation();
   await mutations.insert(key, JSON.stringify(value));
@@ -114,6 +119,7 @@ module.exports = {
   generateOrRetrieveMutableData,
   defineCurrentMD,
   getItems,
+  getSelectedEntry,
   insertItem,
   updateItem,
   deleteItems,
