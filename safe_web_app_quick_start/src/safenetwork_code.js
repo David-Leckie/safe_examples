@@ -18,7 +18,7 @@ async function authoriseAndConnect() {
   console.log("Application connected to the network");
 };
 
-async function checkForStoredMDAddress() {
+async function checkForMutableData() {
   try {
     ownContainerName = await safeApp.getOwnContainerName();
     ownContainer = await safeApp.auth.getContainer(ownContainerName);
@@ -33,8 +33,8 @@ async function checkForStoredMDAddress() {
 
 let storedNameAndTag;
 
-async function generateOrRetrieveMutableData() {
-  if (await checkForStoredMDAddress() == false) {
+async function getMutableDataAddress() {
+  if (await checkForMutableData() == false) {
     console.log("Creating MutableData with initial dataset...");
       const typeTag = 15000;
       md = await safeApp.mutableData.newRandomPublic(typeTag);
@@ -68,13 +68,13 @@ async function generateOrRetrieveMutableData() {
 
 }
 
-async function defineCurrentMD() {
-  let storedNameAndTag = await generateOrRetrieveMutableData();
-  currentMD = await safeApp.mutableData.newPublic(storedNameAndTag.name, storedNameAndTag.typeTag);
+async function linkToMutableData() {
+  let storedNameAndTag = await getMutableDataAddress();
+  linkedMD = await safeApp.mutableData.newPublic(storedNameAndTag.name, storedNameAndTag.typeTag);
 }
 
 async function getItems() {
-  const entries = await currentMD.getEntries();
+  const entries = await linkedMD.getEntries();
   let entriesList = await entries.listEntries();
   let items = [];
   entriesList.forEach((entry) => {
@@ -87,21 +87,21 @@ async function getItems() {
   return items;
 };
 
-async function getSelectedEntry(radioKey) {
-    let selectedEntry = await currentMD.get(radioKey); 
+async function getSelectedEntryVersion(radioKey) {
+    let selectedEntry = await linkedMD.get(radioKey); 
     return selectedEntry.version
 };
 
 async function insertItem(key, value) {
   const mutations = await safeApp.mutableData.newMutation();
   await mutations.insert(key, JSON.stringify(value));
-  await currentMD.applyEntriesMutation(mutations);
+  await linkedMD.applyEntriesMutation(mutations);
 };
 
 async function updateItem(key, value, version) {
   const mutations = await safeApp.mutableData.newMutation();
   await mutations.update(key, JSON.stringify(value), version + 1);
-  await currentMD.applyEntriesMutation(mutations);
+  await linkedMD.applyEntriesMutation(mutations);
 };
 
 async function deleteItems(items) {
@@ -109,17 +109,17 @@ async function deleteItems(items) {
   items.forEach(async (item) => {
     await mutations.delete(item.key, item.version + 1);
   });
-  await currentMD.applyEntriesMutation(mutations);
+  await linkedMD.applyEntriesMutation(mutations);
 };
 
 
 module.exports = {
   authoriseAndConnect,
-  checkForStoredMDAddress,
-  generateOrRetrieveMutableData,
-  defineCurrentMD,
+  checkForMutableData,
+  getMutableDataAddress,
+  linkToMutableData,
   getItems,
-  getSelectedEntry,
+  getSelectedEntryVersion,
   insertItem,
   updateItem,
   deleteItems,
